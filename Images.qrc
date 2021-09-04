@@ -14,5 +14,8 @@
         <file>Images/pausebutton-50.png</file>
         <file>Images/start_button.png</file>
         <file>Images/start_button_default.png</file>
+        <file>Images/Pause_disabled.png</file>
+        <file>Images/Resume.png</file>
+        <file>Images/Pause.png</file>
     </qresource>
 </RCC>

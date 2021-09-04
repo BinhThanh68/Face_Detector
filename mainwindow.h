@@ -8,6 +8,7 @@
 #include "cascadefacedetector.h"
 #include "Struct_and_Enum.h"
 #include "DeepLearning_Model.h"
+#include "facerecognizer.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -56,6 +57,8 @@ private:
     ImageInput ImgInput;
     CascadeFaceDetector cascadeDetector;
     DeepLearning_Model DL;
+    facerecognizer recognizer;
+    vector<Rect> dtectedFaceList;
     QTimer timer;
     Mat frame, displayFrame;
     int timer_value;

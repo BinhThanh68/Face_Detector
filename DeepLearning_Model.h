@@ -16,7 +16,7 @@ class DeepLearning_Model
 public:
     DeepLearning_Model();
 
-    void detectFaceCaffe(Mat &image, int &faceNum);
+    void detectFaceCaffe(Mat &image, int &faceNum, vector<Rect> &facelist);
     void inline setScaleFactor(float scale) {scaleFactor = scale;}
     void inline setCfdThreshold(float thresh) {caffeCfdThreshold = thresh;}
 

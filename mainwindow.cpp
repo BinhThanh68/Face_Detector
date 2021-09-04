@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->LB_CaffeScaleFactorVal->setText(QString::number(float(ui->SB_CaffeScaleFactor->value()/10.0)));
     ui->LB_CaffeScoreThreshVal->setText(QString::number(float(ui->SB_CaffeScoreThresh->value()/10.0)));
 
-
     MainViewBG = QPixmap(":/Images/Default_background.PNG");
     ui->LB_MainView->setPixmap(MainViewBG.scaled(ui->LB_MainView->width(), ui->LB_MainView->height(), Qt::IgnoreAspectRatio));
 
@@ -33,9 +32,10 @@ MainWindow::MainWindow(QWidget *parent)
     pixImgOn =     QPixmap(":/Images/image_on.png");
     pixVideoOff =  QPixmap(":/Images/video_off.png");
     pixVideoOn =   QPixmap(":/Images/video_on.png");
-    pixpauseDflt = QPixmap(":/Images/start_button_default.png");
-    pixPauseStart = QPixmap(":/Images/start_button.png");
-    pixPauseStop = QPixmap(":/Images/pausebutton-50.png");
+    pixpauseDflt = QPixmap(":/Images/Pause_disabled.png");
+    pixPauseStart = QPixmap(":/Images/Resume.png");
+    pixPauseStop = QPixmap(":/Images/Pause.png");
+
 
     QIcon BTIconCamOff(pixCamOff);
     ui->BTN_CamOpen->setIcon(BTIconCamOff);
@@ -53,11 +53,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     QIcon BTIPauseDflt(pixpauseDflt);
     ui->BTNPause->setIcon(BTIPauseDflt);
-    ui->BTNPause->setIconSize(pixpauseDflt.rect().size());
+    ui->BTNPause->setIconSize(ui->BTNPause->rect().size());
 
     ui->PTE_AppLog->appendPlainText("Application Started!");
-//    timer_value = 10;
-    timer.start(10);
+
+
+    timer_value = 10;
+    timer.start(timer_value);
 
 }
 
@@ -89,9 +91,11 @@ void MainWindow::on_DisplayTimer(){
             //detect face by caffe model
             Mat imgtodetect; int facenum;
             frame.copyTo(imgtodetect);
-            DL.detectFaceCaffe(imgtodetect, facenum);
+            DL.detectFaceCaffe(imgtodetect, facenum, dtectedFaceList);
             cvtColor(imgtodetect, displayFrame, COLOR_BGR2RGB);
             ui->FacesNum->setText(QString::number(facenum));
+
+
         }
         else{
             //Show original frame if detetor disabled
@@ -131,6 +135,13 @@ void MainWindow::on_BTN_CamOpen_clicked()
         QIcon BTIconVideoOff(pixVideoOff);
         ui->BTN_VideoOpen->setIcon(BTIconVideoOff);
         ui->BTN_VideoOpen->setIconSize(pixVideoOff.rect().size());
+
+        QIcon BTIconPause(pixPauseStop);
+        ui->BTNPause->setIcon(BTIconPause);
+        ui->BTNPause->setIconSize(ui->BTNPause->rect().size());
+
+        //avoid input source changed while timer is disabled
+        if(!timer.isActive()) {timer.start(timer_value);}
         }else{
             ui->PTE_AppLog->appendPlainText("Failed to open camera");
         }
@@ -148,7 +159,7 @@ void MainWindow::on_BTN_CamOpen_clicked()
 
         QIcon BTIPauseDflt(pixpauseDflt);
         ui->BTNPause->setIcon(BTIPauseDflt);
-        ui->BTNPause->setIconSize(pixpauseDflt.rect().size());
+        ui->BTNPause->setIconSize(ui->BTNPause->rect().size());
     }
 }
 
@@ -178,9 +189,9 @@ void MainWindow::on_BTN_ImageOpen_clicked()
         ui->BTN_CamOpen->setIcon(BTIconCamOff);
         ui->BTN_CamOpen->setIconSize(pixCamOff.rect().size());
 
-        QIcon BTIPauseStop(pixPauseStop);
-        ui->BTNPause->setIcon(BTIPauseStop);
-        ui->BTNPause->setIconSize(pixPauseStop.rect().size());
+        QIcon BTIPause(pixpauseDflt);
+        ui->BTNPause->setIcon(BTIPause);
+        ui->BTNPause->setIconSize(ui->BTNPause->rect().size());
 
     }else if((ImgInput.GetImageSource() == FROM_VIDEO)){
         ImgInput.CamClose();
@@ -189,8 +200,12 @@ void MainWindow::on_BTN_ImageOpen_clicked()
         QIcon BTIconVideoOff(pixVideoOff);
         ui->BTN_VideoOpen->setIcon(BTIconVideoOff);
         ui->BTN_VideoOpen->setIconSize(pixVideoOff.rect().size());
-    }
 
+        QIcon BTIconPause(pixpauseDflt);
+        ui->BTNPause->setIcon(BTIconPause);
+        ui->BTNPause->setIconSize(ui->BTNPause->rect().size());
+    }
+    timer.stop();
     QString filename =  QFileDialog::getOpenFileName(
               this,
               "Open Image",
@@ -204,10 +219,18 @@ void MainWindow::on_BTN_ImageOpen_clicked()
        QIcon BTIconImgOn(pixImgOn);
        ui->BTN_ImageOpen->setIcon(BTIconImgOn);
        ui->BTN_ImageOpen->setIconSize(pixImgOn.rect().size());
+
+       QIcon BTIPauseStop(pixPauseStop);
+       ui->BTNPause->setIcon(BTIPauseStop);
+       ui->BTNPause->setIconSize(ui->BTNPause->rect().size());
+
+       //avoid input source changed while timer is disabled
+       if(!timer.isActive()) {timer.start(timer_value);}
     }else{
         ImgInput.SetImageSource(IDLE);
         ui->PTE_AppLog->appendPlainText("File invalid");
     }
+    timer.start(timer_value);
 }
 
 
@@ -252,6 +275,9 @@ void MainWindow::on_BTN_VideoOpen_clicked()
        QIcon BTIPauseStop(pixPauseStop);
        ui->BTNPause->setIcon(BTIPauseStop);
        ui->BTNPause->setIconSize(pixPauseStop.rect().size());
+
+       //avoid input source changed while timer is disabled
+       if(!timer.isActive()) {timer.start(timer_value);}
     }else{
         ImgInput.SetImageSource(IDLE);
         ui->PTE_AppLog->appendPlainText("File invalid");
@@ -294,11 +320,11 @@ void MainWindow::on_BTNPause_clicked()
             ui->BTNPause->setIconSize(pixPauseStart.rect().size());
 
         }else{
-            timer.start(10);
+            timer.start(timer_value);
 
             QIcon BTIPauseStop(pixPauseStop);
             ui->BTNPause->setIcon(BTIPauseStop);
-            ui->BTNPause->setIconSize(pixPauseStop.rect().size());
+            ui->BTNPause->setIconSize(ui->BTNPause->rect().size());
         }
     }
 }

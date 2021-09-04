@@ -2,7 +2,7 @@
 
 CascadeFaceDetector::CascadeFaceDetector(QObject *parent) : QObject(parent)
 {
-    Detector = CascadeClassifier("Model_files\\haarcascade_frontalface_default.xml");
+    Detector = CascadeClassifier("Model_files/haarcascade_frontalface_default.xml");
 }
 
 void CascadeFaceDetector::deTectFace(Mat inputImg, vector<Rect> &outPut){
